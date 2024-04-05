@@ -1,0 +1,43 @@
+name: CI/CD Workflow
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.py' 
+      - 'data/*.csv' # path hacia archivos CSV
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Run tests
+      run: |
+        # Aquí irían tus comandos para ejecutar pruebas
+
+  build-and-deploy:
+    needs: test # se ejecuta después de que las pruebas pasen
+    runs-on: ubuntu-latest
+    if: github.event.push.paths == 'data/*.csv' # reconstruir y desplegar solo si se modifican archivos CSV
+    steps:
+    - uses: actions/checkout@v2
+    
+    # construir imagen Docker
+    - name: Build the Docker image
+      run: docker build . --tag mi-aplicacion
+
+    - name: Login to DockerHub
+      run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+    - name: Push Image to DockerHub
+      run: docker push mi-aplicacion
+      
+    # Aquí agregarías pasos para el despliegue, dependiendo de dónde y cómo quieras desplegar tu aplicación
