@@ -1,0 +1,18 @@
+FROM rocker/tidyverse:latest
+COPY . /App
+WORKDIR /App
+EXPOSE 3838
+USER root
+RUN install2.r --error \
+    shiny \
+    shinydashboard  \
+    lubridate   \
+    DT  \
+    forecast    \
+    rvest   \
+    tidyquant   \
+    quantmod    \
+    timeDate    \
+    dygraphs    \
+    dplyr
+CMD ["Rscript", "main.R"]
